@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nathan's Budget Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1117;
+    --card: #1a1d27;
+    --card-border: #2a2d3a;
+    --accent: #6c63ff;
+    --red: #ff6b6b;
+    --green: #00c9a7;
+    --text: #e4e4e7;
+    --text-muted: #9ca3af;
+    --input-bg: #252836;
+    --hover: #2a2d3a;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg); color: var(--text); min-height: 100vh; padding: 1.5rem;
+  }
+  h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: .25rem; }
+  .subtitle { color: var(--text-muted); font-size: .875rem; margin-bottom: 1.5rem; }
+  .top-bar { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
+  .top-bar-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
+
+  .btn {
+    padding: .5rem 1rem; border: none; border-radius: .5rem; font-size: .8rem;
+    cursor: pointer; font-weight: 600; transition: all .2s;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #5b54e6; }
+  .btn-danger { background: var(--red); color: #fff; }
+  .btn-danger:hover { background: #e55a5a; }
+  .btn-outline { background: transparent; border: 1px solid var(--card-border); color: var(--text-muted); }
+  .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-sm { padding: .3rem .6rem; font-size: .7rem; }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+  .card {
+    background: var(--card); border: 1px solid var(--card-border); border-radius: .75rem;
+    padding: 1.25rem; position: relative; overflow: hidden;
+  }
+  .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .card.balance::before { background: var(--accent); }
+  .card.credits::before { background: var(--green); }
+  .card.debits::before { background: var(--red); }
+  .card.count::before { background: #f59e0b; }
+  .card-label { font-size: .75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: .5rem; }
+  .card-value { font-size: 1.75rem; font-weight: 700; }
+  .card-value.positive { color: var(--green); }
+  .card-value.negative { color: var(--red); }
+
+  .charts { display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+  .chart-box { background: var(--card); border: 1px solid var(--card-border); border-radius: .75rem; padding: 1.25rem; }
+  .chart-box h3 { font-size: .875rem; margin-bottom: 1rem; font-weight: 600; }
+  .chart-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+
+  .table-wrap { background: var(--card); border: 1px solid var(--card-border); border-radius: .75rem; overflow: hidden; margin-bottom: 1.5rem; }
+  .table-header { padding: 1rem 1.25rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--card-border); }
+  .table-header h3 { font-size: .875rem; font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    text-align: left; padding: .75rem 1rem; font-size: .7rem; text-transform: uppercase;
+    letter-spacing: .05em; color: var(--text-muted); border-bottom: 1px solid var(--card-border);
+    cursor: pointer; user-select: none;
+  }
+  th:hover { color: var(--accent); }
+  td { padding: .6rem 1rem; font-size: .8rem; border-bottom: 1px solid var(--card-border); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover { background: var(--hover); }
+  .amount-debit { color: var(--red); }
+  .amount-credit { color: var(--green); }
+  .cat-badge {
+    display: inline-block; padding: .15rem .5rem; border-radius: .3rem;
+    font-size: .65rem; font-weight: 600;
+  }
+
+  .modal-overlay {
+    display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,.6); z-index: 100; align-items: center; justify-content: center;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: var(--card); border: 1px solid var(--card-border); border-radius: .75rem;
+    padding: 1.5rem; width: 90%; max-width: 420px;
+  }
+  .modal h3 { margin-bottom: 1rem; font-size: 1rem; }
+  .form-group { margin-bottom: 1rem; }
+  .form-group label { display: block; font-size: .75rem; color: var(--text-muted); margin-bottom: .35rem; text-transform: uppercase; letter-spacing: .03em; }
+  .form-group input, .form-group select {
+    width: 100%; padding: .55rem .75rem; background: var(--input-bg); border: 1px solid var(--card-border);
+    border-radius: .5rem; color: var(--text); font-size: .85rem; outline: none;
+  }
+  .form-group input:focus, .form-group select:focus { border-color: var(--accent); }
+  .form-actions { display: flex; gap: .5rem; justify-content: flex-end; margin-top: 1.25rem; }
+  .type-toggle { display: flex; gap: 0; border-radius: .5rem; overflow: hidden; border: 1px solid var(--card-border); }
+  .type-toggle button {
+    flex: 1; padding: .5rem 1rem; background: var(--input-bg); border: none;
+    color: var(--text-muted); font-size: .8rem; cursor: pointer; font-weight: 600;
+  }
+  .type-toggle button.active-debit { background: var(--red); color: #fff; }
+  .type-toggle button.active-credit { background: var(--green); color: #111; }
+
+  .toast {
+    position: fixed; bottom: 1.5rem; right: 1.5rem; background: var(--accent); color: #fff;
+    padding: .75rem 1.25rem; border-radius: .5rem; font-size: .8rem; font-weight: 600;
+    opacity: 0; transition: opacity .3s; pointer-events: none; z-index: 200;
+  }
+  .toast.show { opacity: 1; }
+
+  @media (max-width: 768px) {
+    .charts { grid-template-columns: 1fr; }
+    .chart-row2 { grid-template-columns: 1fr; }
+    body { padding: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div>
+    <h1>Nathan's Budget</h1>
+    <div class="subtitle">Personal finance tracker</div>
+  </div>
+  <div class="top-bar-actions">
+    <button class="btn btn-primary" onclick="openModal()">+ Add Transaction</button>
+    <button class="btn btn-outline" onclick="exportCSV()">Export CSV</button>
+  </div>
+</div>
+
+<div class="cards">
+  <div class="card balance"><div class="card-label">Current Balance</div><div class="card-value" id="balanceVal">$0</div></div>
+  <div class="card credits"><div class="card-label">Total Credits</div><div class="card-value positive" id="creditsVal">$0</div></div>
+  <div class="card debits"><div class="card-label">Total Debits</div><div class="card-value negative" id="debitsVal">$0</div></div>
+  <div class="card count"><div class="card-label">Transactions</div><div class="card-value" id="countVal">0</div></div>
+</div>
+
+<div class="charts">
+  <div class="chart-box"><h3>Running Balance</h3><canvas id="balanceChart"></canvas></div>
+  <div class="chart-box"><h3>Spending by Category</h3><canvas id="categoryChart"></canvas></div>
+</div>
+<div class="chart-row2">
+  <div class="chart-box"><h3>Monthly Credits vs Debits</h3><canvas id="monthlyChart"></canvas></div>
+  <div class="chart-box"><h3>Top Expenses by Category</h3><canvas id="topExpensesChart"></canvas></div>
+</div>
+
+<div class="table-wrap">
+  <div class="table-header">
+    <h3>Transaction History</h3>
+    <span style="color:var(--text-muted);font-size:.75rem" id="tableCount"></span>
+  </div>
+  <div style="overflow-x:auto">
+    <table>
+      <thead>
+        <tr>
+          <th onclick="sortTable('date')">Date</th>
+          <th onclick="sortTable('category')">Category</th>
+          <th onclick="sortTable('description')">Description</th>
+          <th onclick="sortTable('debit')">Debit</th>
+          <th onclick="sortTable('credit')">Credit</th>
+          <th onclick="sortTable('balance')">Balance</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="txBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <h3 id="modalTitle">Add Transaction</h3>
+    <div class="form-group">
+      <label>Date</label>
+      <input type="date" id="txDate">
+    </div>
+    <div class="form-group">
+      <label>Category</label>
+      <select id="txCategory" onchange="toggleNewCat()"></select>
+    </div>
+    <div class="form-group" id="newCatGroup" style="display:none">
+      <label>New Category Name</label>
+      <input type="text" id="txNewCat" placeholder="Enter new category">
+    </div>
+    <div class="form-group">
+      <label>Description</label>
+      <input type="text" id="txDesc" placeholder="e.g. Dodo, Lunch, Uber">
+    </div>
+    <div class="form-group">
+      <label>Type</label>
+      <div class="type-toggle">
+        <button id="btnDebit" onclick="setType('debit')" class="active-debit">Debit</button>
+        <button id="btnCredit" onclick="setType('credit')">Credit</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Amount ($)</label>
+      <input type="number" id="txAmount" min="0" step="0.01" placeholder="0.00">
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveTransaction()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ---- Category Colours ----
+const CAT_COLORS = {
+  'Car': '#6c63ff', 'Club': '#8b5cf6', 'Driving lessons': '#f97316',
+  'Insurance': '#ec4899', 'Meal': '#f59e0b', 'Misc': '#64748b',
+  'Phone': '#14b8a6', 'Salary': '#00c9a7', 'Transport': '#ff6b6b', 'Other': '#475569'
+};
+const EXTRA_COLORS = ['#e879f9','#38bdf8','#a3e635','#fb923c','#c084fc','#22d3ee','#fbbf24','#f87171'];
+
+function getCatColor(cat) {
+  if (CAT_COLORS[cat]) return CAT_COLORS[cat];
+  let hash = 0;
+  for (let i = 0; i < cat.length; i++) hash = ((hash << 5) - hash) + cat.charCodeAt(i);
+  return EXTRA_COLORS[Math.abs(hash) % EXTRA_COLORS.length];
+}
+
+const DEFAULT_CATEGORIES = ['Car','Club','Driving lessons','Insurance','Meal','Misc','Phone','Salary','Transport','Other'];
+
+function getAllCategories() {
+  const cats = new Set(DEFAULT_CATEGORIES);
+  transactions.forEach(t => { if (t.category) cats.add(t.category); });
+  return [...cats].sort();
+}
+
+function populateCategorySelect(selected) {
+  const sel = document.getElementById('txCategory');
+  const cats = getAllCategories();
+  sel.innerHTML = cats.map(c => `<option value="${c}">${c}</option>`).join('') +
+    '<option value="__new__">+ New category...</option>';
+  sel.value = selected && cats.includes(selected) ? selected : 'Misc';
+  toggleNewCat();
+}
+
+function toggleNewCat() {
+  const sel = document.getElementById('txCategory');
+  document.getElementById('newCatGroup').style.display = sel.value === '__new__' ? '' : 'none';
+  if (sel.value === '__new__') document.getElementById('txNewCat').focus();
+}
+
+// ---- Initial Data (imported from Nathan money.xlsx) ----
+const INITIAL_DATA = [
+  { date: "2026-03-11", debit: 0, credit: 443, category: "", description: "Bank balance" },
+  { date: "2026-03-14", debit: 45, credit: 0, category: "", description: "" },
+  { date: "2026-03-18", debit: 131, credit: 0, category: "", description: "" },
+  { date: "2026-03-19", debit: 40, credit: 0, category: "", description: "" },
+  { date: "2026-03-26", debit: 0, credit: 305, category: "", description: "" },
+  { date: "2026-03-26", debit: 45, credit: 0, category: "Car", description: "Plastic restorer" },
+  { date: "2026-03-26", debit: 27, credit: 0, category: "Car", description: "Wheel paint" },
+  { date: "2026-03-26", debit: 27, credit: 0, category: "Car", description: "Interior cleaner" },
+  { date: "2026-03-26", debit: 15, credit: 0, category: "Car", description: "Touch up paint" },
+  { date: "2026-03-26", debit: 13, credit: 0, category: "Car", description: "Polishing ball" },
+  { date: "2026-03-26", debit: 26, credit: 0, category: "Car", description: "Steering wheel cover" },
+  { date: "2026-03-26", debit: 46, credit: 0, category: "Car", description: "Polish" },
+  { date: "2026-03-26", debit: 8, credit: 0, category: "Car", description: "Air freshener" },
+  { date: "2026-03-26", debit: 150, credit: 0, category: "Transport", description: "Uber" },
+  { date: "2026-03-28", debit: 20, credit: 0, category: "Club", description: "Club Court" },
+  { date: "2026-04-03", debit: 30, credit: 0, category: "Phone", description: "Dodo" },
+  { date: "2026-04-03", debit: 6, credit: 0, category: "Misc", description: "Owed" },
+  { date: "2026-04-08", debit: 0, credit: 125, category: "Salary", description: "Salary" },
+  { date: "2026-04-11", debit: 30, credit: 0, category: "Meal", description: "Breakfast" },
+  { date: "2026-04-17", debit: 26, credit: 0, category: "Phone", description: "Dodo" },
+  { date: "2026-04-17", debit: 45, credit: 0, category: "Driving lessons", description: "Ryde" },
+  { date: "2026-04-17", debit: 34, credit: 0, category: "Meal", description: "Lunch" },
+  { date: "2026-04-21", debit: 38, credit: 0, category: "Insurance", description: "Insurance" }
+];
+
+// ---- State ----
+const STORAGE_KEY = "nathan_budget_v7";
+let transactions = [];
+let editIndex = -1;
+let currentSort = { col: 'date', asc: true };
+let balanceChartInst, categoryChartInst, monthlyChartInst, topExpensesChartInst;
+
+function loadData() {
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if (stored) {
+    transactions = JSON.parse(stored);
+  } else {
+    transactions = INITIAL_DATA.map((t, i) => ({ ...t, id: i + 1 }));
+    saveData();
+  }
+}
+
+function saveData() { localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions)); }
+function nextId() { return transactions.length ? Math.max(...transactions.map(t => t.id || 0)) + 1 : 1; }
+function getCategory(t) { return t.category || 'Other'; }
+
+// ---- Calculations ----
+function recalcRunning(txs) {
+  let bal = 0;
+  return txs.map(t => { bal += (t.credit || 0) - (t.debit || 0); return { ...t, balance: bal }; });
+}
+
+function getSorted() {
+  const sorted = [...transactions].sort((a, b) => {
+    if (a.date < b.date) return -1;
+    if (a.date > b.date) return 1;
+    return (a.id || 0) - (b.id || 0);
+  });
+  return recalcRunning(sorted);
+}
+
+// ---- Rendering ----
+function render() {
+  const data = getSorted();
+  const totalCredits = data.reduce((s, t) => s + (t.credit || 0), 0);
+  const totalDebits = data.reduce((s, t) => s + (t.debit || 0), 0);
+  const balance = totalCredits - totalDebits;
+
+  document.getElementById('balanceVal').textContent = '$' + balance.toFixed(2);
+  document.getElementById('balanceVal').className = 'card-value ' + (balance >= 0 ? 'positive' : 'negative');
+  document.getElementById('creditsVal').textContent = '$' + totalCredits.toFixed(2);
+  document.getElementById('debitsVal').textContent = '$' + totalDebits.toFixed(2);
+  document.getElementById('countVal').textContent = data.length;
+  document.getElementById('tableCount').textContent = data.length + ' transactions';
+
+  renderTable(data);
+  renderBalanceChart(data);
+  renderCategoryChart(data);
+  renderMonthlyChart(data);
+  renderTopExpensesChart(data);
+}
+
+function renderTable(data) {
+  const sorted = [...data];
+  const { col, asc } = currentSort;
+  sorted.sort((a, b) => {
+    let va, vb;
+    if (col === 'date') { va = a.date; vb = b.date; }
+    else if (col === 'category') { va = getCategory(a).toLowerCase(); vb = getCategory(b).toLowerCase(); }
+    else if (col === 'description') { va = (a.description || '').toLowerCase(); vb = (b.description || '').toLowerCase(); }
+    else if (col === 'debit') { va = a.debit || 0; vb = b.debit || 0; }
+    else if (col === 'credit') { va = a.credit || 0; vb = b.credit || 0; }
+    else if (col === 'balance') { va = a.balance || 0; vb = b.balance || 0; }
+    if (va < vb) return asc ? -1 : 1;
+    if (va > vb) return asc ? 1 : -1;
+    return 0;
+  });
+
+  const tbody = document.getElementById('txBody');
+  tbody.innerHTML = sorted.map(t => {
+    const idx = transactions.findIndex(x => x.id === t.id);
+    const cat = getCategory(t);
+    const cc = getCatColor(cat);
+    return `<tr>
+      <td>${formatDate(t.date)}</td>
+      <td><span class="cat-badge" style="background:${cc}22;color:${cc}">${cat}</span></td>
+      <td>${t.description || '\u2014'}</td>
+      <td class="amount-debit">${t.debit ? '$' + t.debit.toFixed(2) : ''}</td>
+      <td class="amount-credit">${t.credit ? '$' + t.credit.toFixed(2) : ''}</td>
+      <td style="font-weight:600;color:${t.balance >= 0 ? 'var(--green)' : 'var(--red)'}">$${t.balance.toFixed(2)}</td>
+      <td>
+        <button class="btn btn-outline btn-sm" onclick="editTx(${idx})">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteTx(${idx})">Del</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function formatDate(d) {
+  if (!d) return '';
+  const p = d.split('-');
+  return p[2] + '/' + p[1] + '/' + p[0];
+}
+
+function sortTable(col) {
+  if (currentSort.col === col) currentSort.asc = !currentSort.asc;
+  else { currentSort.col = col; currentSort.asc = true; }
+  render();
+}
+
+// ---- Charts ----
+function renderBalanceChart(data) {
+  const ctx = document.getElementById('balanceChart');
+  if (balanceChartInst) balanceChartInst.destroy();
+  balanceChartInst = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: data.map(t => formatDate(t.date)),
+      datasets: [{
+        label: 'Balance', data: data.map(t => t.balance),
+        borderColor: '#6c63ff', backgroundColor: 'rgba(108,99,255,.1)',
+        fill: true, tension: .3, pointRadius: 3, pointBackgroundColor: '#6c63ff', borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#9ca3af', maxRotation: 45, font: { size: 10 } }, grid: { color: 'rgba(255,255,255,.05)' } },
+        y: { ticks: { color: '#9ca3af', callback: v => '$' + v }, grid: { color: 'rgba(255,255,255,.05)' } }
+      }
+    }
+  });
+}
+
+function renderCategoryChart(data) {
+  const cats = {};
+  data.forEach(t => { if (!t.debit) return; const c = getCategory(t); cats[c] = (cats[c] || 0) + t.debit; });
+  const labels = Object.keys(cats).sort();
+  const values = labels.map(l => cats[l]);
+  const colors = labels.map(l => getCatColor(l));
+  const ctx = document.getElementById('categoryChart');
+  if (categoryChartInst) categoryChartInst.destroy();
+  categoryChartInst = new Chart(ctx, {
+    type: 'doughnut',
+    data: { labels, datasets: [{ data: values, backgroundColor: colors, borderWidth: 0 }] },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'bottom', labels: { color: '#9ca3af', padding: 12, font: { size: 11 } } },
+        tooltip: { callbacks: { label: c => c.label + ': $' + c.raw.toFixed(2) } }
+      }
+    }
+  });
+}
+
+function renderMonthlyChart(data) {
+  const months = {};
+  data.forEach(t => {
+    const m = t.date.substring(0, 7);
+    if (!months[m]) months[m] = { credits: 0, debits: 0 };
+    months[m].credits += t.credit || 0;
+    months[m].debits += t.debit || 0;
+  });
+  const labels = Object.keys(months).sort();
+  const ctx = document.getElementById('monthlyChart');
+  if (monthlyChartInst) monthlyChartInst.destroy();
+  monthlyChartInst = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels.map(l => { const [y,m] = l.split('-'); return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1] + ' ' + y; }),
+      datasets: [
+        { label: 'Credits', data: labels.map(l => months[l].credits), backgroundColor: '#00c9a7', borderRadius: 4 },
+        { label: 'Debits', data: labels.map(l => months[l].debits), backgroundColor: '#ff6b6b', borderRadius: 4 }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { labels: { color: '#9ca3af' } } },
+      scales: {
+        x: { ticks: { color: '#9ca3af' }, grid: { color: 'rgba(255,255,255,.05)' } },
+        y: { ticks: { color: '#9ca3af', callback: v => '$' + v }, grid: { color: 'rgba(255,255,255,.05)' } }
+      }
+    }
+  });
+}
+
+function renderTopExpensesChart(data) {
+  const cats = {};
+  data.forEach(t => { if (!t.debit) return; const c = getCategory(t); cats[c] = (cats[c] || 0) + t.debit; });
+  const sorted = Object.entries(cats).sort((a,b) => b[1] - a[1]).slice(0, 8);
+  const ctx = document.getElementById('topExpensesChart');
+  if (topExpensesChartInst) topExpensesChartInst.destroy();
+  topExpensesChartInst = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: sorted.map(s => s[0]),
+      datasets: [{ label: 'Total', data: sorted.map(s => s[1]), backgroundColor: sorted.map(s => getCatColor(s[0])), borderRadius: 4 }]
+    },
+    options: {
+      indexAxis: 'y', responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#9ca3af', callback: v => '$' + v }, grid: { color: 'rgba(255,255,255,.05)' } },
+        y: { ticks: { color: '#9ca3af', font: { size: 11 } }, grid: { display: false } }
+      }
+    }
+  });
+}
+
+// ---- Modal ----
+let txType = 'debit';
+
+function setType(type) {
+  txType = type;
+  document.getElementById('btnDebit').className = type === 'debit' ? 'active-debit' : '';
+  document.getElementById('btnCredit').className = type === 'credit' ? 'active-credit' : '';
+}
+
+function openModal(idx) {
+  editIndex = idx !== undefined ? idx : -1;
+  document.getElementById('modalTitle').textContent = editIndex >= 0 ? 'Edit Transaction' : 'Add Transaction';
+  document.getElementById('txNewCat').value = '';
+  if (editIndex >= 0) {
+    const t = transactions[editIndex];
+    document.getElementById('txDate').value = t.date;
+    populateCategorySelect(getCategory(t));
+    document.getElementById('txDesc').value = t.description || '';
+    document.getElementById('txAmount').value = t.credit ? t.credit : t.debit;
+    setType(t.credit ? 'credit' : 'debit');
+  } else {
+    document.getElementById('txDate').value = new Date().toISOString().split('T')[0];
+    populateCategorySelect('Misc');
+    document.getElementById('txDesc').value = '';
+    document.getElementById('txAmount').value = '';
+    setType('debit');
+  }
+  document.getElementById('modalOverlay').classList.add('active');
+  document.getElementById('txDesc').focus();
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('active');
+  editIndex = -1;
+}
+
+function saveTransaction() {
+  const date = document.getElementById('txDate').value;
+  let category = document.getElementById('txCategory').value;
+  if (category === '__new__') {
+    category = document.getElementById('txNewCat').value.trim();
+    if (!category) { toast('Please enter a category name'); return; }
+  }
+  const desc = document.getElementById('txDesc').value.trim();
+  const amount = parseFloat(document.getElementById('txAmount').value);
+  if (!date || isNaN(amount) || amount <= 0) { toast('Please fill in all fields'); return; }
+
+  const tx = {
+    id: editIndex >= 0 ? transactions[editIndex].id : nextId(),
+    date, debit: txType === 'debit' ? amount : 0, credit: txType === 'credit' ? amount : 0,
+    category, description: desc
+  };
+
+  if (editIndex >= 0) transactions[editIndex] = tx;
+  else transactions.push(tx);
+
+  saveData(); closeModal(); render();
+  toast(editIndex >= 0 ? 'Transaction updated' : 'Transaction added');
+}
+
+function editTx(idx) { openModal(idx); }
+
+function deleteTx(idx) {
+  if (!confirm('Delete this transaction?')) return;
+  transactions.splice(idx, 1);
+  saveData(); render(); toast('Transaction deleted');
+}
+
+// ---- Export ----
+function exportCSV() {
+  const data = getSorted();
+  let csv = 'Date,Category,Description,Debit,Credit,Balance\n';
+  data.forEach(t => {
+    csv += `${t.date},"${getCategory(t)}","${(t.description||'').replace(/"/g,'""')}",${t.debit||0},${t.credit||0},${t.balance.toFixed(2)}\n`;
+  });
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'nathan_budget_' + new Date().toISOString().split('T')[0] + '.csv';
+  a.click();
+}
+
+// ---- Toast ----
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+// ---- Init ----
+loadData();
+render();
+</script>
+</body>
+</html>
