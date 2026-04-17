@@ -164,7 +164,6 @@
           <th onclick="sortTable('debit')">Debit</th>
           <th onclick="sortTable('credit')">Credit</th>
           <th onclick="sortTable('balance')">Balance</th>
-          <th>Actions</th>
         </tr>
       </thead>
       <tbody id="txBody"></tbody>
@@ -353,7 +352,6 @@ function renderTable(data) {
 
   const tbody = document.getElementById('txBody');
   tbody.innerHTML = sorted.map(t => {
-    const idx = transactions.findIndex(x => x.id === t.id);
     const cat = getCategory(t);
     const cc = getCatColor(cat);
     return `<tr>
@@ -363,10 +361,6 @@ function renderTable(data) {
       <td class="amount-debit">${t.debit ? '$' + t.debit.toFixed(2) : ''}</td>
       <td class="amount-credit">${t.credit ? '$' + t.credit.toFixed(2) : ''}</td>
       <td style="font-weight:600;color:${t.balance >= 0 ? 'var(--green)' : 'var(--red)'}">$${t.balance.toFixed(2)}</td>
-      <td>
-        <button class="btn btn-outline btn-sm" onclick="editTx(${idx})">Edit</button>
-        <button class="btn btn-danger btn-sm" onclick="reverseTx(${idx})">Reverse</button>
-      </td>
     </tr>`;
   }).join('');
 }
