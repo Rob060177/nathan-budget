@@ -216,7 +216,7 @@
 // ---- Category Colours ----
 const CAT_COLORS = {
   'Car': '#6c63ff', 'Club': '#8b5cf6', 'Driving lessons': '#f97316',
-  'Insurance': '#ec4899', 'Meal': '#f59e0b', 'Misc': '#64748b',
+  'Error': '#ef4444', 'Insurance': '#ec4899', 'Meal': '#f59e0b', 'Misc': '#64748b',
   'Phone': '#14b8a6', 'Salary': '#00c9a7', 'Transport': '#ff6b6b', 'Other': '#475569'
 };
 const EXTRA_COLORS = ['#e879f9','#38bdf8','#a3e635','#fb923c','#c084fc','#22d3ee','#fbbf24','#f87171'];
@@ -228,7 +228,7 @@ function getCatColor(cat) {
   return EXTRA_COLORS[Math.abs(hash) % EXTRA_COLORS.length];
 }
 
-const DEFAULT_CATEGORIES = ['Car','Club','Driving lessons','Insurance','Meal','Misc','Phone','Salary','Transport','Other'];
+const DEFAULT_CATEGORIES = ['Car','Club','Driving lessons','Error','Insurance','Meal','Misc','Phone','Salary','Transport','Other'];
 
 function getAllCategories() {
   const cats = new Set(DEFAULT_CATEGORIES);
@@ -365,7 +365,7 @@ function renderTable(data) {
       <td style="font-weight:600;color:${t.balance >= 0 ? 'var(--green)' : 'var(--red)'}">$${t.balance.toFixed(2)}</td>
       <td>
         <button class="btn btn-outline btn-sm" onclick="editTx(${idx})">Edit</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteTx(${idx})">Del</button>
+        <button class="btn btn-danger btn-sm" onclick="reverseTx(${idx})">Reverse</button>
       </td>
     </tr>`;
   }).join('');
@@ -546,9 +546,26 @@ function saveTransaction() {
 function editTx(idx) { openModal(idx); }
 
 function deleteTx(idx) {
-  if (!confirm('Delete this transaction?')) return;
-  transactions.splice(idx, 1);
-  saveData(); render(); toast('Transaction deleted');
+  // Legacy — no longer used. Use reverseTx instead.
+}
+
+function reverseTx(idx) {
+  const t = transactions[idx];
+  const desc = 'REVERSAL: ' + (t.description || getCategory(t));
+  if (!confirm('Reverse this transaction?\n\nA new offsetting entry will be created:\n"' + desc + '"')) return;
+
+  const reversal = {
+    id: nextId(),
+    date: new Date().toISOString().split('T')[0],
+    debit: t.credit || 0,
+    credit: t.debit || 0,
+    category: 'Error',
+    description: desc
+  };
+
+  transactions.push(reversal);
+  saveData(); render();
+  toast('Reversal entry created');
 }
 
 // ---- Export ----
