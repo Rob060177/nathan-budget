@@ -114,9 +114,40 @@
   .toast.show { opacity: 1; }
 
   @media (max-width: 768px) {
-    .charts { grid-template-columns: 1fr; }
-    .chart-row2 { grid-template-columns: 1fr; }
-    body { padding: 1rem; }
+    body { padding: .75rem; }
+
+    /* Top bar — stack vertically, full-width buttons */
+    .top-bar { flex-direction: column; gap: .75rem; }
+    .top-bar-actions { width: 100%; }
+    .top-bar-actions .btn { flex: 1; text-align: center; }
+
+    /* Cards — 2x2 grid, compact */
+    .cards { grid-template-columns: repeat(2, 1fr); gap: .6rem; }
+    .card { padding: .85rem; }
+    .card-label { font-size: .65rem; margin-bottom: .3rem; }
+    .card-value { font-size: 1.3rem; }
+
+    /* Charts — single column, compact */
+    .charts { grid-template-columns: 1fr; gap: .75rem; }
+    .chart-row2 { grid-template-columns: 1fr; gap: .75rem; }
+    .chart-box { padding: .85rem; }
+    .chart-box h3 { font-size: .75rem; margin-bottom: .6rem; }
+
+    /* Table — compact cells, hide category column */
+    .table-header { padding: .75rem; }
+    .table-header h3 { font-size: .75rem; }
+    th { padding: .5rem .4rem; font-size: .6rem; }
+    td { padding: .4rem; font-size: .7rem; }
+    .hide-mobile { display: none; }
+
+    /* Modal — larger touch targets */
+    .modal { padding: 1.25rem; width: 95%; }
+    .form-group input, .form-group select { padding: .7rem; font-size: .9rem; }
+    .type-toggle button { padding: .6rem; }
+    .btn { padding: .6rem 1rem; }
+
+    /* Toast — centered */
+    .toast { left: 1rem; right: 1rem; bottom: 1rem; text-align: center; }
   }
 </style>
 </head>
@@ -159,7 +190,7 @@
       <thead>
         <tr>
           <th onclick="sortTable('date')">Date</th>
-          <th onclick="sortTable('category')">Category</th>
+          <th onclick="sortTable('category')" class="hide-mobile">Category</th>
           <th onclick="sortTable('description')">Description</th>
           <th onclick="sortTable('debit')">Debit</th>
           <th onclick="sortTable('credit')">Credit</th>
@@ -356,7 +387,7 @@ function renderTable(data) {
     const cc = getCatColor(cat);
     return `<tr>
       <td>${formatDate(t.date)}</td>
-      <td><span class="cat-badge" style="background:${cc}22;color:${cc}">${cat}</span></td>
+      <td class="hide-mobile"><span class="cat-badge" style="background:${cc}22;color:${cc}">${cat}</span></td>
       <td>${t.description || '\u2014'}</td>
       <td class="amount-debit">${t.debit ? '$' + t.debit.toFixed(2) : ''}</td>
       <td class="amount-credit">${t.credit ? '$' + t.credit.toFixed(2) : ''}</td>
