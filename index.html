@@ -39,6 +39,7 @@
   .btn-outline { background: transparent; border: 1px solid var(--card-border); color: var(--text-muted); }
   .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
   .btn-sm { padding: .3rem .6rem; font-size: .7rem; }
+  .btn:disabled { opacity: .4; cursor: not-allowed; }
 
   .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
   .card {
@@ -97,6 +98,7 @@
     border-radius: .5rem; color: var(--text); font-size: .85rem; outline: none;
   }
   .form-group input:focus, .form-group select:focus { border-color: var(--accent); }
+  .form-group .help-text { font-size: .7rem; color: var(--text-muted); margin-top: .3rem; }
   .form-actions { display: flex; gap: .5rem; justify-content: flex-end; margin-top: 1.25rem; }
   .type-toggle { display: flex; gap: 0; border-radius: .5rem; overflow: hidden; border: 1px solid var(--card-border); }
   .type-toggle button {
@@ -113,50 +115,62 @@
   }
   .toast.show { opacity: 1; }
 
-  .backup-status {
+  .sync-status {
     text-align: center; font-size: .7rem; color: var(--text-muted); padding: .5rem;
     border-top: 1px solid var(--card-border); margin-top: 1rem;
   }
+  .sync-status .dot {
+    display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: .4rem; vertical-align: middle;
+  }
+  .sync-status .dot.green { background: var(--green); }
+  .sync-status .dot.yellow { background: #f59e0b; }
+  .sync-status .dot.red { background: var(--red); }
+
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: var(--bg); z-index: 300; display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 1rem;
+  }
+  .loading-overlay.hidden { display: none; }
+  .spinner {
+    width: 36px; height: 36px; border: 3px solid var(--card-border); border-top-color: var(--accent);
+    border-radius: 50%; animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
   @media (max-width: 768px) {
     body { padding: .75rem; }
-
-    /* Top bar — stack vertically, full-width buttons */
     .top-bar { flex-direction: column; gap: .75rem; }
     .top-bar-actions { width: 100%; }
     .top-bar-actions .btn { flex: 1; text-align: center; }
-
-    /* Cards — 2x2 grid, compact */
     .cards { grid-template-columns: repeat(2, 1fr); gap: .6rem; }
     .card { padding: .85rem; }
     .card-label { font-size: .65rem; margin-bottom: .3rem; }
     .card-value { font-size: 1.3rem; }
-
-    /* Charts — single column, compact */
     .charts { grid-template-columns: 1fr; gap: .75rem; }
     .chart-row2 { grid-template-columns: 1fr; gap: .75rem; }
     .chart-box { padding: .85rem; }
     .chart-box h3 { font-size: .75rem; margin-bottom: .6rem; }
-
-    /* Table — compact cells, hide category column */
     .table-header { padding: .75rem; }
     .table-header h3 { font-size: .75rem; }
     th { padding: .5rem .4rem; font-size: .6rem; }
     td { padding: .4rem; font-size: .7rem; }
     .hide-mobile { display: none; }
-
-    /* Modal — larger touch targets */
     .modal { padding: 1.25rem; width: 95%; }
     .form-group input, .form-group select { padding: .7rem; font-size: .9rem; }
     .type-toggle button { padding: .6rem; }
     .btn { padding: .6rem 1rem; }
-
-    /* Toast — centered */
     .toast { left: 1rem; right: 1rem; bottom: 1rem; text-align: center; }
   }
 </style>
 </head>
 <body>
+
+<!-- Loading overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div style="color:var(--text-muted);font-size:.85rem">Loading transactions...</div>
+</div>
 
 <div class="top-bar">
   <div>
@@ -164,11 +178,9 @@
     <div class="subtitle">Personal finance tracker</div>
   </div>
   <div class="top-bar-actions">
-    <button class="btn btn-primary" onclick="openModal()">+ Add Transaction</button>
+    <button class="btn btn-primary" onclick="openModal()" id="btnAdd">+ Add Transaction</button>
     <button class="btn btn-outline" onclick="exportCSV()">Export CSV</button>
-    <button class="btn btn-outline" onclick="downloadBackup()">Backup</button>
-    <button class="btn btn-outline" onclick="document.getElementById('importFile').click()">Import</button>
-    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importBackup(event)">
+    <button class="btn btn-outline" onclick="openSettingsModal()">Settings</button>
   </div>
 </div>
 
@@ -210,7 +222,7 @@
   </div>
 </div>
 
-<!-- Add/Edit Modal -->
+<!-- Add/Edit Transaction Modal -->
 <div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
   <div class="modal">
     <h3 id="modalTitle">Add Transaction</h3>
@@ -243,16 +255,51 @@
     </div>
     <div class="form-actions">
       <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="saveTransaction()">Save</button>
+      <button class="btn btn-primary" onclick="saveTransaction()" id="btnSaveTx">Save</button>
     </div>
   </div>
 </div>
 
-<div class="backup-status" id="backupStatus"></div>
+<!-- Settings Modal (PAT setup) -->
+<div class="modal-overlay" id="settingsOverlay" onclick="if(event.target===this)closeSettings()">
+  <div class="modal">
+    <h3>Settings</h3>
+    <div class="form-group">
+      <label>GitHub Personal Access Token</label>
+      <input type="password" id="patInput" placeholder="ghp_xxxxxxxxxxxx">
+      <div class="help-text">
+        Required to save transactions. Generate one at
+        <a href="https://github.com/settings/tokens?type=beta" target="_blank" style="color:var(--accent)">GitHub Settings > Fine-grained tokens</a>.
+        Select only the <strong>nathan-budget</strong> repo, grant <strong>Contents: Read and write</strong>.
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Sync Status</label>
+      <div id="settingsSyncInfo" style="font-size:.8rem;color:var(--text-muted)"></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-outline" onclick="clearPAT()">Clear Token</button>
+      <button class="btn btn-primary" onclick="savePAT()">Save Token</button>
+    </div>
+  </div>
+</div>
+
+<div class="sync-status" id="syncStatus"></div>
 
 <div class="toast" id="toast"></div>
 
 <script>
+// ---- GitHub Config ----
+const GH_OWNER = 'Rob060177';
+const GH_REPO = 'nathan-budget';
+const GH_FILE = 'data.json';
+const GH_BRANCH = 'main';
+const PAT_KEY = 'nathan_budget_pat';
+const CACHE_KEY = 'nathan_budget_cache';
+
+function getPAT() { return localStorage.getItem(PAT_KEY) || ''; }
+function hasPAT() { return !!getPAT(); }
+
 // ---- Category Colours ----
 const CAT_COLORS = {
   'Car': '#6c63ff', 'Club': '#8b5cf6', 'Driving lessons': '#f97316',
@@ -291,59 +338,143 @@ function toggleNewCat() {
   if (sel.value === '__new__') document.getElementById('txNewCat').focus();
 }
 
-// ---- Initial Data (imported from Nathan money.xlsx) ----
-const INITIAL_DATA = [
-  { date: "2026-03-11", debit: 0, credit: 443, category: "", description: "Bank balance" },
-  { date: "2026-03-14", debit: 45, credit: 0, category: "", description: "" },
-  { date: "2026-03-18", debit: 131, credit: 0, category: "", description: "" },
-  { date: "2026-03-19", debit: 40, credit: 0, category: "", description: "" },
-  { date: "2026-03-26", debit: 0, credit: 305, category: "", description: "" },
-  { date: "2026-03-26", debit: 45, credit: 0, category: "Car", description: "Plastic restorer" },
-  { date: "2026-03-26", debit: 27, credit: 0, category: "Car", description: "Wheel paint" },
-  { date: "2026-03-26", debit: 27, credit: 0, category: "Car", description: "Interior cleaner" },
-  { date: "2026-03-26", debit: 15, credit: 0, category: "Car", description: "Touch up paint" },
-  { date: "2026-03-26", debit: 13, credit: 0, category: "Car", description: "Polishing ball" },
-  { date: "2026-03-26", debit: 26, credit: 0, category: "Car", description: "Steering wheel cover" },
-  { date: "2026-03-26", debit: 46, credit: 0, category: "Car", description: "Polish" },
-  { date: "2026-03-26", debit: 8, credit: 0, category: "Car", description: "Air freshener" },
-  { date: "2026-03-26", debit: 150, credit: 0, category: "Transport", description: "Uber" },
-  { date: "2026-03-28", debit: 20, credit: 0, category: "Club", description: "Club Court" },
-  { date: "2026-04-03", debit: 30, credit: 0, category: "Phone", description: "Dodo" },
-  { date: "2026-04-03", debit: 6, credit: 0, category: "Misc", description: "Owed" },
-  { date: "2026-04-08", debit: 0, credit: 125, category: "Salary", description: "Salary" },
-  { date: "2026-04-11", debit: 30, credit: 0, category: "Meal", description: "Breakfast" },
-  { date: "2026-04-17", debit: 26, credit: 0, category: "Phone", description: "Dodo" },
-  { date: "2026-04-17", debit: 45, credit: 0, category: "Driving lessons", description: "Ryde" },
-  { date: "2026-04-17", debit: 34, credit: 0, category: "Meal", description: "Lunch" },
-  { date: "2026-04-21", debit: 38, credit: 0, category: "Insurance", description: "Insurance" }
-];
-
 // ---- State ----
-const STORAGE_KEY = "nathan_budget_v7";
 let transactions = [];
 let editIndex = -1;
 let currentSort = { col: 'date', asc: true };
+let fileSha = null; // GitHub file SHA needed for updates
 let balanceChartInst, categoryChartInst, monthlyChartInst, topExpensesChartInst;
 
-function loadData() {
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored) {
-    transactions = JSON.parse(stored);
-  } else {
-    transactions = INITIAL_DATA.map((t, i) => ({ ...t, id: i + 1 }));
-    saveData();
+function nextId() { return transactions.length ? Math.max(...transactions.map(t => t.id || 0)) + 1 : 1; }
+function getCategory(t) { return t.category || 'Other'; }
+
+// ---- GitHub API ----
+
+// Fetch data.json from GitHub (public — no auth needed for reading)
+async function loadFromGitHub() {
+  try {
+    // Use the API so we also get the SHA for later commits
+    const resp = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_FILE}?ref=${GH_BRANCH}`, {
+      headers: { 'Accept': 'application/vnd.github.v3+json' }
+    });
+    if (!resp.ok) throw new Error('GitHub fetch failed: ' + resp.status);
+    const meta = await resp.json();
+    fileSha = meta.sha;
+    const content = atob(meta.content);
+    const data = JSON.parse(content);
+    return data.transactions || [];
+  } catch (err) {
+    console.error('GitHub load error:', err);
+    return null;
   }
 }
 
-function saveData() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
-  // Auto-backup with timestamp
-  const backup = { version: STORAGE_KEY, timestamp: new Date().toISOString(), transactions };
-  localStorage.setItem(STORAGE_KEY + '_backup', JSON.stringify(backup));
-  updateBackupStatus();
+// Commit data.json to GitHub (requires PAT)
+async function saveToGitHub(txs) {
+  const pat = getPAT();
+  if (!pat) {
+    toast('Set up your GitHub token in Settings to save');
+    return false;
+  }
+
+  const payload = JSON.stringify({ transactions: txs }, null, 2);
+  const encoded = btoa(unescape(encodeURIComponent(payload)));
+
+  // Get current SHA first (in case someone else updated)
+  try {
+    const shaResp = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_FILE}?ref=${GH_BRANCH}`, {
+      headers: { 'Authorization': 'Bearer ' + pat, 'Accept': 'application/vnd.github.v3+json' }
+    });
+    if (shaResp.ok) {
+      const shaMeta = await shaResp.json();
+      fileSha = shaMeta.sha;
+    }
+  } catch (e) { /* use existing SHA */ }
+
+  const body = {
+    message: 'Update transactions ' + new Date().toISOString().split('T')[0],
+    content: encoded,
+    branch: GH_BRANCH
+  };
+  if (fileSha) body.sha = fileSha;
+
+  try {
+    const resp = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_FILE}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': 'Bearer ' + pat,
+        'Accept': 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+
+    if (!resp.ok) {
+      const errData = await resp.json();
+      console.error('GitHub save error:', errData);
+      if (resp.status === 401 || resp.status === 403) {
+        toast('GitHub token invalid or expired. Check Settings.');
+      } else {
+        toast('Failed to save to GitHub');
+      }
+      return false;
+    }
+
+    const result = await resp.json();
+    fileSha = result.content.sha;
+    return true;
+  } catch (err) {
+    console.error('GitHub save error:', err);
+    toast('Network error saving to GitHub');
+    return false;
+  }
 }
-function nextId() { return transactions.length ? Math.max(...transactions.map(t => t.id || 0)) + 1 : 1; }
-function getCategory(t) { return t.category || 'Other'; }
+
+// ---- Data Management ----
+
+async function loadData() {
+  // Try GitHub first
+  const ghData = await loadFromGitHub();
+  if (ghData) {
+    transactions = ghData;
+    // Cache locally as fallback
+    localStorage.setItem(CACHE_KEY, JSON.stringify(transactions));
+    updateSyncStatus('synced');
+  } else {
+    // Fall back to local cache
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (cached) {
+      transactions = JSON.parse(cached);
+      updateSyncStatus('cached');
+    } else {
+      transactions = [];
+      updateSyncStatus('empty');
+    }
+  }
+}
+
+async function saveData() {
+  // Save to local cache immediately
+  localStorage.setItem(CACHE_KEY, JSON.stringify(transactions));
+
+  // Save to GitHub
+  updateSyncStatus('saving');
+  const success = await saveToGitHub(transactions);
+  updateSyncStatus(success ? 'synced' : 'error');
+}
+
+function updateSyncStatus(state) {
+  const el = document.getElementById('syncStatus');
+  const now = new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
+  const msgs = {
+    'synced': `<span class="dot green"></span>Synced to GitHub &bull; ${transactions.length} transactions &bull; ${now}`,
+    'saving': `<span class="dot yellow"></span>Saving to GitHub...`,
+    'cached': `<span class="dot yellow"></span>Using cached data (GitHub unreachable) &bull; ${transactions.length} transactions`,
+    'error': `<span class="dot red"></span>Failed to save to GitHub &bull; data cached locally &bull; ${now}`,
+    'empty': `<span class="dot red"></span>No data found &mdash; set up GitHub token in Settings`
+  };
+  el.innerHTML = msgs[state] || '';
+}
 
 // ---- Calculations ----
 function recalcRunning(txs) {
@@ -373,6 +504,9 @@ function render() {
   document.getElementById('debitsVal').textContent = '$' + totalDebits.toFixed(2);
   document.getElementById('countVal').textContent = data.length;
   document.getElementById('tableCount').textContent = data.length + ' transactions';
+
+  // Disable add button if no PAT
+  document.getElementById('btnAdd').disabled = false;
 
   renderTable(data);
   renderBalanceChart(data);
@@ -524,7 +658,7 @@ function renderTopExpensesChart(data) {
   });
 }
 
-// ---- Modal ----
+// ---- Transaction Modal ----
 let txType = 'debit';
 
 function setType(type) {
@@ -534,6 +668,11 @@ function setType(type) {
 }
 
 function openModal(idx) {
+  if (!hasPAT()) {
+    openSettingsModal();
+    toast('Set up your GitHub token first');
+    return;
+  }
   editIndex = idx !== undefined ? idx : -1;
   document.getElementById('modalTitle').textContent = editIndex >= 0 ? 'Edit Transaction' : 'Add Transaction';
   document.getElementById('txNewCat').value = '';
@@ -560,7 +699,7 @@ function closeModal() {
   editIndex = -1;
 }
 
-function saveTransaction() {
+async function saveTransaction() {
   const date = document.getElementById('txDate').value;
   let category = document.getElementById('txCategory').value;
   if (category === '__new__') {
@@ -571,6 +710,11 @@ function saveTransaction() {
   const amount = parseFloat(document.getElementById('txAmount').value);
   if (!date || isNaN(amount) || amount <= 0) { toast('Please fill in all fields'); return; }
 
+  // Disable save button while saving
+  const btn = document.getElementById('btnSaveTx');
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
   const tx = {
     id: editIndex >= 0 ? transactions[editIndex].id : nextId(),
     date, debit: txType === 'debit' ? amount : 0, credit: txType === 'credit' ? amount : 0,
@@ -580,17 +724,18 @@ function saveTransaction() {
   if (editIndex >= 0) transactions[editIndex] = tx;
   else transactions.push(tx);
 
-  saveData(); closeModal(); render();
-  toast(editIndex >= 0 ? 'Transaction updated' : 'Transaction added');
+  await saveData();
+  closeModal();
+  render();
+
+  btn.disabled = false;
+  btn.textContent = 'Save';
+  toast(editIndex >= 0 ? 'Transaction updated & synced' : 'Transaction added & synced');
 }
 
 function editTx(idx) { openModal(idx); }
 
-function deleteTx(idx) {
-  // Legacy — no longer used. Use reverseTx instead.
-}
-
-function reverseTx(idx) {
+async function reverseTx(idx) {
   const t = transactions[idx];
   const desc = 'REVERSAL: ' + (t.description || getCategory(t));
   if (!confirm('Reverse this transaction?\n\nA new offsetting entry will be created:\n"' + desc + '"')) return;
@@ -605,8 +750,41 @@ function reverseTx(idx) {
   };
 
   transactions.push(reversal);
-  saveData(); render();
-  toast('Reversal entry created');
+  await saveData();
+  render();
+  toast('Reversal entry synced to GitHub');
+}
+
+// ---- Settings Modal (PAT) ----
+function openSettingsModal() {
+  document.getElementById('patInput').value = getPAT();
+  const info = document.getElementById('settingsSyncInfo');
+  if (hasPAT()) {
+    info.innerHTML = '<span class="dot green" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:.4rem;vertical-align:middle"></span>Token configured &bull; ' + transactions.length + ' transactions';
+  } else {
+    info.innerHTML = '<span class="dot red" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--red);margin-right:.4rem;vertical-align:middle"></span>No token set &mdash; read-only mode';
+  }
+  document.getElementById('settingsOverlay').classList.add('active');
+}
+
+function closeSettings() {
+  document.getElementById('settingsOverlay').classList.remove('active');
+}
+
+function savePAT() {
+  const pat = document.getElementById('patInput').value.trim();
+  if (!pat) { toast('Please enter a token'); return; }
+  localStorage.setItem(PAT_KEY, pat);
+  closeSettings();
+  toast('Token saved');
+  updateSyncStatus('synced');
+}
+
+function clearPAT() {
+  localStorage.removeItem(PAT_KEY);
+  document.getElementById('patInput').value = '';
+  toast('Token cleared');
+  updateSyncStatus('cached');
 }
 
 // ---- Export ----
@@ -630,68 +808,14 @@ function toast(msg) {
   setTimeout(() => el.classList.remove('show'), 2500);
 }
 
-// ---- Backup & Import ----
-function downloadBackup() {
-  const backup = {
-    version: STORAGE_KEY,
-    timestamp: new Date().toISOString(),
-    transactions: transactions
-  };
-  const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'nathan_budget_backup_' + new Date().toISOString().split('T')[0] + '.json';
-  a.click();
-  toast('Backup downloaded');
-}
-
-function importBackup(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      const data = JSON.parse(e.target.result);
-      let imported;
-      if (data.transactions && Array.isArray(data.transactions)) {
-        imported = data.transactions;
-      } else if (Array.isArray(data)) {
-        imported = data;
-      } else {
-        toast('Invalid backup file'); return;
-      }
-      if (!confirm('Import ' + imported.length + ' transactions? This will replace all current data.')) return;
-      transactions = imported;
-      saveData();
-      render();
-      toast('Imported ' + imported.length + ' transactions');
-    } catch (err) {
-      toast('Error reading backup file');
-    }
-  };
-  reader.readAsText(file);
-  event.target.value = '';
-}
-
-function updateBackupStatus() {
-  const el = document.getElementById('backupStatus');
-  if (!el) return;
-  const backupStr = localStorage.getItem(STORAGE_KEY + '_backup');
-  if (backupStr) {
-    try {
-      const backup = JSON.parse(backupStr);
-      const d = new Date(backup.timestamp);
-      el.textContent = 'Last saved: ' + d.toLocaleDateString('en-AU') + ' ' + d.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' }) + ' \u2022 ' + backup.transactions.length + ' transactions';
-    } catch { el.textContent = ''; }
-  } else {
-    el.textContent = 'No backup yet \u2014 add a transaction to create one';
-  }
-}
-
 // ---- Init ----
-loadData();
-render();
-updateBackupStatus();
+async function init() {
+  await loadData();
+  render();
+  document.getElementById('loadingOverlay').classList.add('hidden');
+}
+
+init();
 </script>
 </body>
 </html>
