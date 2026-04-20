@@ -1,27 +1,196 @@
 {
   "transactions": [
-    { "id": 1, "date": "2026-03-11", "debit": 0, "credit": 443, "category": "", "description": "Bank balance" },
-    { "id": 2, "date": "2026-03-14", "debit": 45, "credit": 0, "category": "", "description": "" },
-    { "id": 3, "date": "2026-03-18", "debit": 131, "credit": 0, "category": "", "description": "" },
-    { "id": 4, "date": "2026-03-19", "debit": 40, "credit": 0, "category": "", "description": "" },
-    { "id": 5, "date": "2026-03-26", "debit": 0, "credit": 305, "category": "", "description": "" },
-    { "id": 6, "date": "2026-03-26", "debit": 45, "credit": 0, "category": "Car", "description": "Plastic restorer" },
-    { "id": 7, "date": "2026-03-26", "debit": 27, "credit": 0, "category": "Car", "description": "Wheel paint" },
-    { "id": 8, "date": "2026-03-26", "debit": 27, "credit": 0, "category": "Car", "description": "Interior cleaner" },
-    { "id": 9, "date": "2026-03-26", "debit": 15, "credit": 0, "category": "Car", "description": "Touch up paint" },
-    { "id": 10, "date": "2026-03-26", "debit": 13, "credit": 0, "category": "Car", "description": "Polishing ball" },
-    { "id": 11, "date": "2026-03-26", "debit": 26, "credit": 0, "category": "Car", "description": "Steering wheel cover" },
-    { "id": 12, "date": "2026-03-26", "debit": 46, "credit": 0, "category": "Car", "description": "Polish" },
-    { "id": 13, "date": "2026-03-26", "debit": 8, "credit": 0, "category": "Car", "description": "Air freshener" },
-    { "id": 14, "date": "2026-03-26", "debit": 150, "credit": 0, "category": "Transport", "description": "Uber" },
-    { "id": 15, "date": "2026-03-28", "debit": 20, "credit": 0, "category": "Club", "description": "Club Court" },
-    { "id": 16, "date": "2026-04-03", "debit": 30, "credit": 0, "category": "Phone", "description": "Dodo" },
-    { "id": 17, "date": "2026-04-03", "debit": 6, "credit": 0, "category": "Misc", "description": "Owed" },
-    { "id": 18, "date": "2026-04-08", "debit": 0, "credit": 125, "category": "Salary", "description": "Salary" },
-    { "id": 19, "date": "2026-04-11", "debit": 30, "credit": 0, "category": "Meal", "description": "Breakfast" },
-    { "id": 20, "date": "2026-04-17", "debit": 26, "credit": 0, "category": "Phone", "description": "Dodo" },
-    { "id": 21, "date": "2026-04-17", "debit": 45, "credit": 0, "category": "Driving lessons", "description": "Ryde" },
-    { "id": 22, "date": "2026-04-17", "debit": 34, "credit": 0, "category": "Meal", "description": "Lunch" },
-    { "id": 23, "date": "2026-04-21", "debit": 38, "credit": 0, "category": "Insurance", "description": "Insurance" }
+    {
+      "id": 1,
+      "date": "2026-03-11",
+      "debit": 0,
+      "credit": 443,
+      "category": "",
+      "description": "Bank balance"
+    },
+    {
+      "id": 2,
+      "date": "2026-03-14",
+      "debit": 45,
+      "credit": 0,
+      "category": "",
+      "description": ""
+    },
+    {
+      "id": 3,
+      "date": "2026-03-18",
+      "debit": 131,
+      "credit": 0,
+      "category": "",
+      "description": ""
+    },
+    {
+      "id": 4,
+      "date": "2026-03-19",
+      "debit": 40,
+      "credit": 0,
+      "category": "",
+      "description": ""
+    },
+    {
+      "id": 5,
+      "date": "2026-03-26",
+      "debit": 0,
+      "credit": 305,
+      "category": "",
+      "description": ""
+    },
+    {
+      "id": 6,
+      "date": "2026-03-26",
+      "debit": 45,
+      "credit": 0,
+      "category": "Car",
+      "description": "Plastic restorer"
+    },
+    {
+      "id": 7,
+      "date": "2026-03-26",
+      "debit": 27,
+      "credit": 0,
+      "category": "Car",
+      "description": "Wheel paint"
+    },
+    {
+      "id": 8,
+      "date": "2026-03-26",
+      "debit": 27,
+      "credit": 0,
+      "category": "Car",
+      "description": "Interior cleaner"
+    },
+    {
+      "id": 9,
+      "date": "2026-03-26",
+      "debit": 15,
+      "credit": 0,
+      "category": "Car",
+      "description": "Touch up paint"
+    },
+    {
+      "id": 10,
+      "date": "2026-03-26",
+      "debit": 13,
+      "credit": 0,
+      "category": "Car",
+      "description": "Polishing ball"
+    },
+    {
+      "id": 11,
+      "date": "2026-03-26",
+      "debit": 26,
+      "credit": 0,
+      "category": "Car",
+      "description": "Steering wheel cover"
+    },
+    {
+      "id": 12,
+      "date": "2026-03-26",
+      "debit": 46,
+      "credit": 0,
+      "category": "Car",
+      "description": "Polish"
+    },
+    {
+      "id": 13,
+      "date": "2026-03-26",
+      "debit": 8,
+      "credit": 0,
+      "category": "Car",
+      "description": "Air freshener"
+    },
+    {
+      "id": 14,
+      "date": "2026-03-26",
+      "debit": 150,
+      "credit": 0,
+      "category": "Transport",
+      "description": "Uber"
+    },
+    {
+      "id": 15,
+      "date": "2026-03-28",
+      "debit": 20,
+      "credit": 0,
+      "category": "Club",
+      "description": "Club Court"
+    },
+    {
+      "id": 16,
+      "date": "2026-04-03",
+      "debit": 30,
+      "credit": 0,
+      "category": "Phone",
+      "description": "Dodo"
+    },
+    {
+      "id": 17,
+      "date": "2026-04-03",
+      "debit": 6,
+      "credit": 0,
+      "category": "Misc",
+      "description": "Owed"
+    },
+    {
+      "id": 18,
+      "date": "2026-04-08",
+      "debit": 0,
+      "credit": 125,
+      "category": "Salary",
+      "description": "Salary"
+    },
+    {
+      "id": 19,
+      "date": "2026-04-11",
+      "debit": 30,
+      "credit": 0,
+      "category": "Meal",
+      "description": "Breakfast"
+    },
+    {
+      "id": 20,
+      "date": "2026-04-17",
+      "debit": 26,
+      "credit": 0,
+      "category": "Phone",
+      "description": "Dodo"
+    },
+    {
+      "id": 21,
+      "date": "2026-04-17",
+      "debit": 45,
+      "credit": 0,
+      "category": "Driving lessons",
+      "description": "Ryde"
+    },
+    {
+      "id": 22,
+      "date": "2026-04-17",
+      "debit": 34,
+      "credit": 0,
+      "category": "Meal",
+      "description": "Lunch"
+    },
+    {
+      "id": 23,
+      "date": "2026-04-21",
+      "debit": 38,
+      "credit": 0,
+      "category": "Insurance",
+      "description": "Insurance"
+    },
+    {
+      "id": 24,
+      "date": "2026-04-20",
+      "debit": 30,
+      "credit": 0,
+      "category": "Meal",
+      "description": "City"
+    }
   ]
 }
