@@ -113,6 +113,11 @@
   }
   .toast.show { opacity: 1; }
 
+  .backup-status {
+    text-align: center; font-size: .7rem; color: var(--text-muted); padding: .5rem;
+    border-top: 1px solid var(--card-border); margin-top: 1rem;
+  }
+
   @media (max-width: 768px) {
     body { padding: .75rem; }
 
@@ -161,6 +166,9 @@
   <div class="top-bar-actions">
     <button class="btn btn-primary" onclick="openModal()">+ Add Transaction</button>
     <button class="btn btn-outline" onclick="exportCSV()">Export CSV</button>
+    <button class="btn btn-outline" onclick="downloadBackup()">Backup</button>
+    <button class="btn btn-outline" onclick="document.getElementById('importFile').click()">Import</button>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importBackup(event)">
   </div>
 </div>
 
@@ -239,6 +247,8 @@
     </div>
   </div>
 </div>
+
+<div class="backup-status" id="backupStatus"></div>
 
 <div class="toast" id="toast"></div>
 
@@ -325,7 +335,13 @@ function loadData() {
   }
 }
 
-function saveData() { localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions)); }
+function saveData() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
+  // Auto-backup with timestamp
+  const backup = { version: STORAGE_KEY, timestamp: new Date().toISOString(), transactions };
+  localStorage.setItem(STORAGE_KEY + '_backup', JSON.stringify(backup));
+  updateBackupStatus();
+}
 function nextId() { return transactions.length ? Math.max(...transactions.map(t => t.id || 0)) + 1 : 1; }
 function getCategory(t) { return t.category || 'Other'; }
 
@@ -614,9 +630,68 @@ function toast(msg) {
   setTimeout(() => el.classList.remove('show'), 2500);
 }
 
+// ---- Backup & Import ----
+function downloadBackup() {
+  const backup = {
+    version: STORAGE_KEY,
+    timestamp: new Date().toISOString(),
+    transactions: transactions
+  };
+  const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'nathan_budget_backup_' + new Date().toISOString().split('T')[0] + '.json';
+  a.click();
+  toast('Backup downloaded');
+}
+
+function importBackup(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      let imported;
+      if (data.transactions && Array.isArray(data.transactions)) {
+        imported = data.transactions;
+      } else if (Array.isArray(data)) {
+        imported = data;
+      } else {
+        toast('Invalid backup file'); return;
+      }
+      if (!confirm('Import ' + imported.length + ' transactions? This will replace all current data.')) return;
+      transactions = imported;
+      saveData();
+      render();
+      toast('Imported ' + imported.length + ' transactions');
+    } catch (err) {
+      toast('Error reading backup file');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function updateBackupStatus() {
+  const el = document.getElementById('backupStatus');
+  if (!el) return;
+  const backupStr = localStorage.getItem(STORAGE_KEY + '_backup');
+  if (backupStr) {
+    try {
+      const backup = JSON.parse(backupStr);
+      const d = new Date(backup.timestamp);
+      el.textContent = 'Last saved: ' + d.toLocaleDateString('en-AU') + ' ' + d.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' }) + ' \u2022 ' + backup.transactions.length + ' transactions';
+    } catch { el.textContent = ''; }
+  } else {
+    el.textContent = 'No backup yet \u2014 add a transaction to create one';
+  }
+}
+
 // ---- Init ----
 loadData();
 render();
+updateBackupStatus();
 </script>
 </body>
 </html>
