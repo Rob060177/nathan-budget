@@ -191,6 +191,14 @@
       "credit": 0,
       "category": "Meal",
       "description": "City"
+    },
+    {
+      "id": 25,
+      "date": "2026-04-22",
+      "debit": 0,
+      "credit": 148,
+      "category": "Salary",
+      "description": "Salary"
     }
   ]
 }
