@@ -199,6 +199,14 @@
       "credit": 148,
       "category": "Salary",
       "description": "Salary"
+    },
+    {
+      "id": 26,
+      "date": "2026-04-23",
+      "debit": 30,
+      "credit": 0,
+      "category": "Car",
+      "description": "Hazard test"
     }
   ]
 }
