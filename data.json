@@ -207,6 +207,14 @@
       "credit": 0,
       "category": "Car",
       "description": "Hazard test"
+    },
+    {
+      "id": 27,
+      "date": "2026-04-23",
+      "debit": 10,
+      "credit": 0,
+      "category": "Meal",
+      "description": "Yochi"
     }
   ]
 }
