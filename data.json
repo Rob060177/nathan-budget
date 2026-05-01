@@ -215,6 +215,14 @@
       "credit": 0,
       "category": "Meal",
       "description": "Yochi"
+    },
+    {
+      "id": 28,
+      "date": "2026-05-01",
+      "debit": 15,
+      "credit": 0,
+      "category": "Clothing",
+      "description": "Work shirt"
     }
   ]
 }
