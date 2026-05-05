@@ -223,6 +223,14 @@
       "credit": 0,
       "category": "Clothing",
       "description": "Work shirt"
+    },
+    {
+      "id": 29,
+      "date": "2026-05-05",
+      "debit": 0,
+      "credit": 508,
+      "category": "Salary",
+      "description": "Salary"
     }
   ]
 }
