@@ -231,6 +231,14 @@
       "credit": 508,
       "category": "Salary",
       "description": "Salary"
+    },
+    {
+      "id": 30,
+      "date": "2026-04-23",
+      "debit": 37.31,
+      "credit": 0,
+      "category": "Insurance",
+      "description": "Car"
     }
   ]
 }
