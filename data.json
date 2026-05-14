@@ -239,6 +239,14 @@
       "credit": 0,
       "category": "Insurance",
       "description": "Car"
+    },
+    {
+      "id": 31,
+      "date": "2026-04-21",
+      "debit": 37.31,
+      "credit": 0,
+      "category": "Insurance",
+      "description": "Car"
     }
   ]
 }
