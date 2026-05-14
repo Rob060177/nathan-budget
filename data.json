@@ -263,6 +263,14 @@
       "credit": 0,
       "category": "Misc",
       "description": "Nicole dr"
+    },
+    {
+      "id": 34,
+      "date": "2026-05-14",
+      "debit": 161.95,
+      "credit": 0,
+      "category": "Transport",
+      "description": "Uber feb20-may10"
     }
   ]
 }
