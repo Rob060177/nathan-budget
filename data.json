@@ -255,6 +255,14 @@
       "credit": 0,
       "category": "Insurance",
       "description": "Car"
+    },
+    {
+      "id": 33,
+      "date": "2026-05-14",
+      "debit": 80,
+      "credit": 0,
+      "category": "Misc",
+      "description": "Nicole dr"
     }
   ]
 }
