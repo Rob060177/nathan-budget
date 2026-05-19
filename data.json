@@ -295,6 +295,14 @@
       "credit": 0,
       "category": "Meal",
       "description": "Busters"
+    },
+    {
+      "id": 38,
+      "date": "2026-05-19",
+      "debit": 0,
+      "credit": 357,
+      "category": "Salary",
+      "description": "Salary"
     }
   ]
 }
