@@ -319,6 +319,14 @@
       "credit": 0,
       "category": "Phone",
       "description": "Dodo"
+    },
+    {
+      "id": 41,
+      "date": "2026-06-03",
+      "debit": 0,
+      "credit": 320,
+      "category": "Salary",
+      "description": "Salary"
     }
   ]
 }
