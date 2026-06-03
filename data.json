@@ -303,6 +303,14 @@
       "credit": 357,
       "category": "Salary",
       "description": "Salary"
+    },
+    {
+      "id": 39,
+      "date": "2026-06-03",
+      "debit": 37.31,
+      "credit": 0,
+      "category": "Insurance",
+      "description": ""
     }
   ]
 }
