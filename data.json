@@ -327,6 +327,14 @@
       "credit": 320,
       "category": "Salary",
       "description": "Salary"
+    },
+    {
+      "id": 42,
+      "date": "2026-06-04",
+      "debit": 10,
+      "credit": 0,
+      "category": "Meal",
+      "description": "Chips"
     }
   ]
 }
