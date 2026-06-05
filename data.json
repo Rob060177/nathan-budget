@@ -335,6 +335,14 @@
       "credit": 0,
       "category": "Meal",
       "description": "Chips"
+    },
+    {
+      "id": 43,
+      "date": "2026-06-05",
+      "debit": 10,
+      "credit": 0,
+      "category": "Meal",
+      "description": "Yochi"
     }
   ]
 }
