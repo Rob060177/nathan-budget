@@ -343,6 +343,14 @@
       "credit": 0,
       "category": "Meal",
       "description": "Yochi"
+    },
+    {
+      "id": 44,
+      "date": "2026-06-21",
+      "debit": 0,
+      "credit": 900,
+      "category": "Salary",
+      "description": "Salary"
     }
   ]
 }
