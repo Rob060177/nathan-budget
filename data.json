@@ -359,6 +359,14 @@
       "credit": 0,
       "category": "Transport",
       "description": "Petrol"
+    },
+    {
+      "id": 46,
+      "date": "2026-06-23",
+      "debit": 0,
+      "credit": 240,
+      "category": "Salary",
+      "description": "Roxy"
     }
   ]
 }
