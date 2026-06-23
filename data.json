@@ -351,6 +351,14 @@
       "credit": 900,
       "category": "Salary",
       "description": "Salary"
+    },
+    {
+      "id": 45,
+      "date": "2026-06-23",
+      "debit": 73.07,
+      "credit": 0,
+      "category": "Transport",
+      "description": "Petrol"
     }
   ]
 }
