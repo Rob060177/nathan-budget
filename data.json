@@ -391,6 +391,14 @@
       "credit": 0,
       "category": "Salary",
       "description": "Last Dome salary"
+    },
+    {
+      "id": 50,
+      "date": "2026-06-30",
+      "debit": 950,
+      "credit": 0,
+      "category": "Salary",
+      "description": "Credit not debit"
     }
   ]
 }
