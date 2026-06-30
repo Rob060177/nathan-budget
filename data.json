@@ -383,6 +383,14 @@
       "credit": 0,
       "category": "Misc",
       "description": "Vape juice and pods"
+    },
+    {
+      "id": 49,
+      "date": "2026-06-30",
+      "debit": 950,
+      "credit": 0,
+      "category": "Salary",
+      "description": "Last Dome salary"
     }
   ]
 }
