@@ -407,6 +407,14 @@
       "credit": 1900,
       "category": "Misc",
       "description": "Salary"
+    },
+    {
+      "id": 52,
+      "date": "2026-07-10",
+      "debit": 0,
+      "credit": 240,
+      "category": "Salary",
+      "description": "Roxy"
     }
   ]
 }
