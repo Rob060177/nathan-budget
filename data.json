@@ -431,6 +431,14 @@
       "credit": 0,
       "category": "Insurance",
       "description": "June insurance"
+    },
+    {
+      "id": 55,
+      "date": "2026-07-23",
+      "debit": 0,
+      "credit": 240,
+      "category": "Salary",
+      "description": "Roxy 18 Jul"
     }
   ]
 }
