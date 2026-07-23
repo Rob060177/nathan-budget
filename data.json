@@ -423,6 +423,14 @@
       "credit": 0,
       "category": "Insurance",
       "description": ""
+    },
+    {
+      "id": 54,
+      "date": "2026-07-23",
+      "debit": 38,
+      "credit": 0,
+      "category": "Insurance",
+      "description": "June insurance"
     }
   ]
 }
