@@ -439,6 +439,14 @@
       "credit": 240,
       "category": "Salary",
       "description": "Roxy 18 Jul"
+    },
+    {
+      "id": 56,
+      "date": "2026-07-31",
+      "debit": 15,
+      "credit": 0,
+      "category": "Misc",
+      "description": "Yochi"
     }
   ]
 }
