@@ -471,6 +471,14 @@
       "credit": 0,
       "category": "Misc",
       "description": "Lunch"
+    },
+    {
+      "id": 60,
+      "date": "2026-08-15",
+      "debit": 50,
+      "credit": 0,
+      "category": "Misc",
+      "description": "Cals bday"
     }
   ]
 }
