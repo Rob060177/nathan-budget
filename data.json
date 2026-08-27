@@ -455,6 +455,22 @@
       "credit": 1036.85,
       "category": "Salary",
       "description": "Roxy Dome"
+    },
+    {
+      "id": 58,
+      "date": "2026-08-27",
+      "debit": 39.95,
+      "credit": 0,
+      "category": "Insurance",
+      "description": "Car insurance"
+    },
+    {
+      "id": 59,
+      "date": "2026-08-23",
+      "debit": 20,
+      "credit": 0,
+      "category": "Misc",
+      "description": "Lunch"
     }
   ]
 }
