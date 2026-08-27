@@ -503,6 +503,14 @@
       "credit": 0,
       "category": "Misc",
       "description": "License book"
+    },
+    {
+      "id": 64,
+      "date": "2026-08-27",
+      "debit": 315.2,
+      "credit": 0,
+      "category": "Transport",
+      "description": "Uber May15 - Aug27"
     }
   ]
 }
