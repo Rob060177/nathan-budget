@@ -511,6 +511,14 @@
       "credit": 0,
       "category": "Transport",
       "description": "Uber May15 - Aug27"
+    },
+    {
+      "id": 65,
+      "date": "2026-09-02",
+      "debit": 1039,
+      "credit": 0,
+      "category": "Misc",
+      "description": "Phone 16 plus"
     }
   ]
 }
