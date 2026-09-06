@@ -535,6 +535,22 @@
       "credit": 0,
       "category": "Misc",
       "description": "Tax - Kevin"
+    },
+    {
+      "id": 68,
+      "date": "2026-09-03",
+      "debit": 80,
+      "credit": 0,
+      "category": "Misc",
+      "description": "Hair and tablets"
+    },
+    {
+      "id": 69,
+      "date": "2026-09-06",
+      "debit": 200,
+      "credit": 0,
+      "category": "Misc",
+      "description": "Spotlight"
     }
   ]
 }
