@@ -551,6 +551,14 @@
       "credit": 0,
       "category": "Misc",
       "description": "Spotlight"
+    },
+    {
+      "id": 70,
+      "date": "2026-09-07",
+      "debit": 400,
+      "credit": 0,
+      "category": "Misc",
+      "description": "Gran"
     }
   ]
 }
