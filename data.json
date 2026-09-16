@@ -559,6 +559,14 @@
       "credit": 0,
       "category": "Misc",
       "description": "Gran"
+    },
+    {
+      "id": 71,
+      "date": "2026-09-16",
+      "debit": 14.95,
+      "credit": 0,
+      "category": "Misc",
+      "description": "No Pong"
     }
   ]
 }
