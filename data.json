@@ -575,6 +575,14 @@
       "credit": 350,
       "category": "Salary",
       "description": "Salary"
+    },
+    {
+      "id": 73,
+      "date": "2026-10-07",
+      "debit": 39.95,
+      "credit": 0,
+      "category": "Car",
+      "description": "Insurance"
     }
   ]
 }
