@@ -567,6 +567,14 @@
       "credit": 0,
       "category": "Misc",
       "description": "No Pong"
+    },
+    {
+      "id": 72,
+      "date": "2026-10-07",
+      "debit": 0,
+      "credit": 350,
+      "category": "Salary",
+      "description": "Salary"
     }
   ]
 }
