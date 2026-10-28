@@ -583,6 +583,14 @@
       "credit": 0,
       "category": "Car",
       "description": "Insurance"
+    },
+    {
+      "id": 74,
+      "date": "2026-10-28",
+      "debit": 417.38,
+      "credit": 0,
+      "category": "Transport",
+      "description": "Uber aug27 to October 26"
     }
   ]
 }
