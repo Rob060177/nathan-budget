@@ -591,6 +591,14 @@
       "credit": 0,
       "category": "Transport",
       "description": "Uber aug27 to October 26"
+    },
+    {
+      "id": 75,
+      "date": "2026-10-28",
+      "debit": 30,
+      "credit": 0,
+      "category": "Misc",
+      "description": "Work shirt"
     }
   ]
 }
